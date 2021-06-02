@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
     private string jump = "Jump";
     public float jumpPower;
     public bool isGrounded;
+    private float limitPosX = 8.28f;           // 横方向の制限値
+    private float limitPosY = 4.68f;          // 縦方向の制限値
 
     [SerializeField, Header("Linecast用 地面判定レイヤー")]
     private LayerMask groundLayer;
@@ -96,7 +98,12 @@ public class PlayerController : MonoBehaviour
             anim.SetFloat("Run", 0.0f);
             anim.SetBool("Idle", true);
         }
+        // 現在の位置情報が移動範囲の制限範囲を超えていないか確認する。超えていたら、制限範囲内に収める
+        float posX = Mathf.Clamp(transform.position.x, -limitPosX, limitPosX);
+        float posY = Mathf.Clamp(transform.position.y, -limitPosY, limitPosY);
 
-       
+        // 現在の位置を更新(制限範囲を超えた場合、ここで移動の範囲を制限する)
+        transform.position = new Vector2(posX, posY);
+
     }
 }
