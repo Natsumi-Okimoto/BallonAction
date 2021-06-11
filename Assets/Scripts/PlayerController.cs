@@ -21,6 +21,10 @@ public class PlayerController : MonoBehaviour
     public float generateTime;                   // バルーンを生成する時間
     public bool isGenerating;                    // バルーンを生成中かどうかを判定する。false なら生成していない状態。true は生成中の状態
     public bool isFirstGenerateBallon;          // 初めてバルーンを生成したかを判定するための変数(後程外部スクリプトでも利用するためpublicで宣言する)
+    public float knockbackPower;                 // 敵と接触した際に吹き飛ばされる力
+    public int coinPoint;                        // コインを獲得すると増えるポイントの総数
+    public UIManager uiManager;
+
 
 
     [SerializeField, Header("Linecast用 地面判定レイヤー")]
@@ -183,11 +187,14 @@ public class PlayerController : MonoBehaviour
         {
             // 1つ目のバルーン生成を生成して、1番目の配列へ代入
             ballons[0] = Instantiate(ballonPrefab, ballonTrans[0]);
+            ballons[0].GetComponent<Ballon>().SetUpBallon(this);
+
         }
         else
         {
             // 2つ目のバルーン生成を生成して、2番目の配列へ代入
             ballons[1] = Instantiate(ballonPrefab, ballonTrans[1]);
+            ballons[1].GetComponent<Ballon>().SetUpBallon(this);
         }
 
         // 生成時間分待機
@@ -195,5 +202,54 @@ public class PlayerController : MonoBehaviour
 
         // 生成中状態終了。再度生成できるようにする
         isGenerating = false;
+    }
+    private void OnCollisionEnter2D(Collision2D col)
+    {
+
+        // 接触したコライダーを持つゲームオブジェクトのTagがEnemyなら 
+        if (col.gameObject.tag == "Enemy")
+        {
+
+            // キャラと敵の位置から距離と方向を計算
+            Vector3 direction = (transform.position - col.transform.position).normalized;
+
+            // 敵の反対側にキャラを吹き飛ばす
+            transform.position += direction * knockbackPower;
+        }
+    }
+
+    /// <summary>
+    /// バルーン破壊
+    /// </summary>
+    public void DestroyBallon()
+    {
+
+        // TODO 後程、バルーンが破壊される際に「割れた」ように見えるアニメ演出を追加する
+
+        if (ballons[1] != null)
+        {
+            Destroy(ballons[1]);
+        }
+        else if (ballons[0] != null)
+        {
+            Destroy(ballons[0]);
+        }
+    }
+    // IsTriggerがオンのコライダーを持つゲームオブジェクトを通過した場合に呼び出されるメソッド
+    private void OnTriggerEnter2D(Collider2D col)
+    {
+
+        // 通過したコライダーを持つゲームオブジェクトの Tag が Coin の場合
+        if (col.gameObject.tag == "Coin")
+        {
+
+            // 通過したコインのゲームオブジェクトの持つ Coin スクリプトを取得し、point 変数の値をキャラの持つ coinPoint 変数に加算
+            coinPoint += col.gameObject.GetComponent<Coin>().point;
+
+            uiManager.UpdateDisplayScore(coinPoint);
+
+            // 通過したコインのゲームオブジェクトを破壊する
+            Destroy(col.gameObject);
+        }
     }
 }
