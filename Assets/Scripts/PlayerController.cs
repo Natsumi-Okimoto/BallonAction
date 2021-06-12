@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     public bool isGrounded;
     private float limitPosX = 8.28f;           // 横方向の制限値
     private float limitPosY = 4.68f;          // 縦方向の制限値
+    private bool isGameOver = false;
     public GameObject[] ballons;
     public int maxBallonCount;                   // バルーンを生成する最大数
     public Transform[] ballonTrans;              // バルーンの生成位置の配列
@@ -111,7 +112,10 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-
+        if (isGameOver == true)
+        {
+            return;
+        }
         Move();
     }
 
@@ -251,5 +255,14 @@ public class PlayerController : MonoBehaviour
             // 通過したコインのゲームオブジェクトを破壊する
             Destroy(col.gameObject);
         }
+    }
+    /// <summary>
+    /// GameOver
+    /// </summary>
+    public void GameOver()
+    {
+        isGameOver = true;
+        Debug.Log("isGameOver");
+        uiManager.DisplayGameOverInfo();
     }
 }
