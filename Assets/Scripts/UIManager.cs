@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -13,6 +14,14 @@ public class UIManager : MonoBehaviour
     private Text txtInfo;
     [SerializeField]
     private CanvasGroup canvasGroupInfo;
+    [SerializeField]
+    private ResultPopUp resultPopUpPrefab;
+
+    [SerializeField]
+    private Transform canvasTran;
+
+    [SerializeField]
+    private Button btnInfo;
 
     /// <summary>
     /// スコア表示を更新
@@ -32,9 +41,36 @@ public class UIManager : MonoBehaviour
         canvasGroupInfo.DOFade(1.0f, 1.0f);
         // 文字列をアニメーションさせて表示
         txtInfo.DOText("GameOver...", 1.0f);
+
+        btnInfo.onClick.AddListener(RestartGame);
     }
-        // Start is called before the first frame update
-        void Start()
+
+    /// <summary>
+    /// ResultPopUpの生成
+    /// </summary>
+    public void GenerateResultPopUp(int score)
+    {
+        // ResultPopUp を生成
+        ResultPopUp resultPopUp = Instantiate(resultPopUpPrefab, canvasTran, false);
+
+        // ResultPopUp の設定を行う
+        resultPopUp.SetUpResultPopUp(score);
+    }
+
+    public void RestartGame()
+    {
+        btnInfo.onClick.RemoveAllListeners();
+        string sceneName = SceneManager.GetActiveScene().name;
+        canvasGroupInfo.DOFade(0f, 1.0f).OnComplete(() =>
+        {
+            Debug.Log("Restart");
+            SceneManager.LoadScene(sceneName);
+        });
+
+    }
+
+    // Start is called before the first frame update
+    void Start()
     {
         
     }
