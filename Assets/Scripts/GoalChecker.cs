@@ -9,6 +9,8 @@ public class GoalChecker : MonoBehaviour
     private float stopPos = 6.5f;        // 停止地点。画面の右端でストップさせる
 
     private bool isGoal;                 // ゴールの重複判定防止用。一度ゴール判定したら true にして、ゴールの判定は１回だけしか行わないようにする
+
+    private GameDirector gameDirector;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,6 +42,8 @@ public class GoalChecker : MonoBehaviour
 
             // PlayerControllerの持つ、UIManagerの変数を利用して、GenerateResultPopUpメソッドを呼び出す。引数にはPlayerControllerのcoinCountを渡す
             playerController.uiManager.GenerateResultPopUp(playerController.coinPoint);
+
+            //gameDirector.isGameEnd = true;
         }
     }
 
