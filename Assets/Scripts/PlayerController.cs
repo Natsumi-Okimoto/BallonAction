@@ -25,6 +25,8 @@ public class PlayerController : MonoBehaviour
     public float knockbackPower;                 // 敵と接触した際に吹き飛ばされる力
     public int coinPoint;                        // コインを獲得すると増えるポイントの総数
     public UIManager uiManager;
+    [SerializeField]
+    private AudioManager audioManager;
 
 
 
@@ -264,5 +266,10 @@ public class PlayerController : MonoBehaviour
         isGameOver = true;
         Debug.Log("isGameOver");
         uiManager.DisplayGameOverInfo();
+    }
+
+    public void GameClear()
+    {
+        StartCoroutine(audioManager.PlayBGM(2));
     }
 }

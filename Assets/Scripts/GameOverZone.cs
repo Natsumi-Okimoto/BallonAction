@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameOverZone : MonoBehaviour
 {
+    [SerializeField]
+    private AudioManager audioManager;
     private void OnTriggerEnter2D(Collider2D col)
     {
         //Debug.Log(col.name);
@@ -12,6 +14,8 @@ public class GameOverZone : MonoBehaviour
             col.gameObject.GetComponent<PlayerController>().GameOver();   
 
             Debug.Log("Game Over");
+
+            StartCoroutine(audioManager.PlayBGM(3));
         }
     }
     // Start is called before the first frame update

@@ -22,11 +22,14 @@ public class GameDirector : MonoBehaviour
     [SerializeField]
     private RandomObjectGenerator[] randomObjectGenerators;           // RandomObjectGenerator スクリプトのアタッチされているゲームオブジェクトをアサイン
 
+    [SerializeField]
+    private AudioManager audioManager;
     
 
     // Start is called before the first frame update
     void Start()
     {
+        StartCoroutine(audioManager.PlayBGM(0));
         // ゲーム開始状態にセット
         isGameEnd = false;
         isSetUp = false;
@@ -64,6 +67,7 @@ public class GameDirector : MonoBehaviour
             // 各ジェネレータの生成をスタート
             ActivateGenerators();
 
+            StartCoroutine(audioManager.PlayBGM(1));
         }
         // ゲーム終了したら
         if (isGameEnd == true)

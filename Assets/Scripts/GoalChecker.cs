@@ -11,6 +11,8 @@ public class GoalChecker : MonoBehaviour
     private bool isGoal;                 // ゴールの重複判定防止用。一度ゴール判定したら true にして、ゴールの判定は１回だけしか行わないようにする
 
     private GameDirector gameDirector;
+
+   
     // Start is called before the first frame update
     void Start()
     {
@@ -44,6 +46,7 @@ public class GoalChecker : MonoBehaviour
             playerController.uiManager.GenerateResultPopUp(playerController.coinPoint);
 
             //gameDirector.isGameEnd = true;
+            playerController.GameClear();
         }
     }
 
