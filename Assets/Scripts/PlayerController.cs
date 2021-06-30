@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -27,13 +28,33 @@ public class PlayerController : MonoBehaviour
     public UIManager uiManager;
     [SerializeField]
     private AudioManager audioManager;
+    [SerializeField]
+    private AudioClip knockbackSE;                    // 敵と接触した際に鳴らすSE用のオーディオファイルをアサインする
 
+    [SerializeField]
+    private GameObject knockbackEffectPrefab;         // 敵と接触した際に生成するエフェクト用のプレファブのゲームオブジェクトをアサインする
 
+    [SerializeField]
+    private AudioClip getcoinSE;                    // 敵と接触した際に鳴らすSE用のオーディオファイルをアサインする
+
+    [SerializeField]
+    private GameObject getcoinEffectPrefab;         // 敵と接触した際に生成するエフェクト用のプレファブのゲームオブジェクトをアサインする
 
     [SerializeField, Header("Linecast用 地面判定レイヤー")]
     private LayerMask groundLayer;
     [SerializeField]
     private StartChecker startChecker;
+
+    [SerializeField]
+    private Joystick joystick;                        // FloatingJoystick ゲームオブジェクトにアタッチされている FloatingJoystick スクリプトのアサイン用
+
+    [SerializeField]
+    private Button btnJump;                           // btnJump ゲームオブジェクトにアタッチされている Button コンポーネントのアサイン用
+
+    [SerializeField]
+    private Button btnDetach;                         // btnDetachOrGenerate ゲームオブジェクトにアタッチされている Button コンポーネントのアサイン用
+
+    private int ballonCount;
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +63,9 @@ public class PlayerController : MonoBehaviour
         scale = transform.localScale.x;
         anim = GetComponent<Animator>();
         ballons = new GameObject[maxBallonCount];
+       //メソッド登録
+        btnJump.onClick.AddListener(OnClickJump);
+        btnDetach.onClick.AddListener(OnClickDetachOrGenerate);
 
     }
 
@@ -55,17 +79,17 @@ public class PlayerController : MonoBehaviour
         Debug.DrawLine(transform.position + transform.up * 0.4f, transform.position - transform.up * 0.9f, Color.red, 1.0f);
 
         // ballons変数の最初の要素の値が空ではないなら = バルーンが１つ生成されるとこの要素に値が代入される = バルーンが１つあるなら
-        if (ballons[0]!=null)
+        if (ballons[0] != null)
         {
             if (Input.GetButtonDown(jump))
-        {    // InputManager の Jump の項目に登録されているキー入力を判定する
-            Jump();
-        }
-        if (isGrounded == false && rb.velocity.y < 0.15f)
-        {
-            // 落下アニメを繰り返す
-            anim.SetTrigger("Fall");
-        }
+            {    // InputManager の Jump の項目に登録されているキー入力を判定する
+                Jump();
+            }
+            if (isGrounded == false && rb.velocity.y < 0.15f)
+            {
+                // 落下アニメを繰り返す
+                anim.SetTrigger("Fall");
+            }
         }
         else
         {
@@ -107,10 +131,10 @@ public class PlayerController : MonoBehaviour
         // Jump(Up + Mid) アニメーションを再生する
         anim.SetTrigger("Jump");
 
-      
+
     }
 
-    
+
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -123,7 +147,14 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
+#if UNITY_EDITOR
+        // 水平(横)方向への入力受付
         float x = Input.GetAxis(horizontal);
+        x = joystick.Horizontal;
+#else
+        float x = joystick.Horizontal;
+#endif
+        
 
         if (x != 0)
         {
@@ -203,6 +234,8 @@ public class PlayerController : MonoBehaviour
             ballons[1].GetComponent<Ballon>().SetUpBallon(this);
         }
 
+        // バルーンの数を増やす
+        ballonCount++;
         // 生成時間分待機
         yield return new WaitForSeconds(generateTime);
 
@@ -221,6 +254,17 @@ public class PlayerController : MonoBehaviour
 
             // 敵の反対側にキャラを吹き飛ばす
             transform.position += direction * knockbackPower;
+
+
+            // 敵との接触用のSE(AudioClip)を再生する
+            AudioSource.PlayClipAtPoint(knockbackSE, transform.position);
+
+            // 接触した際のエフェクトを、敵の位置に、クローンとして生成する。生成されたゲームオブジェクトを変数へ代入
+            GameObject knockbackEffect = Instantiate(knockbackEffectPrefab, col.transform.position, Quaternion.identity);
+
+            // エフェクトを 0.5 秒後に破棄
+            Destroy(knockbackEffect, 0.5f);
+
         }
     }
 
@@ -240,6 +284,8 @@ public class PlayerController : MonoBehaviour
         {
             Destroy(ballons[0]);
         }
+        // バルーンの数を減らす
+        ballonCount--;
     }
     // IsTriggerがオンのコライダーを持つゲームオブジェクトを通過した場合に呼び出されるメソッド
     private void OnTriggerEnter2D(Collider2D col)
@@ -256,6 +302,15 @@ public class PlayerController : MonoBehaviour
 
             // 通過したコインのゲームオブジェクトを破壊する
             Destroy(col.gameObject);
+
+            // 敵との接触用のSE(AudioClip)を再生する
+            AudioSource.PlayClipAtPoint(getcoinSE, transform.position);
+
+            // 接触した際のエフェクトを、敵の位置に、クローンとして生成する。生成されたゲームオブジェクトを変数へ代入
+            GameObject getcoinEffect = Instantiate(getcoinEffectPrefab, col.transform.position, Quaternion.identity);
+
+            // エフェクトを 0.5 秒後に破棄
+            Destroy(getcoinEffect, 0.5f);
         }
     }
     /// <summary>
@@ -271,5 +326,32 @@ public class PlayerController : MonoBehaviour
     public void GameClear()
     {
         StartCoroutine(audioManager.PlayBGM(2));
+    }
+
+    /// <summary>
+    /// ジャンプボタンを押した際の処理
+    /// </summary>
+    private void OnClickJump()
+    {
+        // バルーンが１つ以上あるなら
+        if (ballonCount > 0)
+        {
+            Jump();
+        }
+    }
+
+    /// <summary>
+    /// バルーン生成ボタンを押した際の処理
+    /// </summary>
+    private void OnClickDetachOrGenerate()
+    {
+
+        // 地面に接地していて、バルーンが２個以下の場合
+        if (isGrounded == true && ballonCount < maxBallonCount && isGenerating == false)
+        {
+
+            // バルーンの生成中でなければ、バルーンを１つ作成する
+            StartCoroutine(GenerateBallon());
+        }
     }
 }
