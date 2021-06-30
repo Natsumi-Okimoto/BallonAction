@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class GoalChecker : MonoBehaviour
 {
@@ -12,7 +13,10 @@ public class GoalChecker : MonoBehaviour
 
     private GameDirector gameDirector;
 
-   
+    [SerializeField]
+    private GameObject secretfloorObj;    // 新しく作成した Ground_Set_Secret ゲームオブジェクトを操作するための変数
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -47,7 +51,32 @@ public class GoalChecker : MonoBehaviour
 
             //gameDirector.isGameEnd = true;
             playerController.GameClear();
+
+            // 落下防止の床を表示
+            secretfloorObj.SetActive(true);
+
+            // 落下防止の床を画面下からアニメさせて表示
+            secretfloorObj.transform.DOLocalMoveY(0.45f, 2.5f).SetEase(Ease.Linear).SetRelative();
         }
+    }
+
+    /// <summary>
+    /// ゴール地点の初期設定
+    /// </summary>
+    public void SetUpGoalHouse(GameDirector gameDirector)
+    {
+
+        this.gameDirector = gameDirector;
+
+
+       
+
+
+        // 落下防止の床を非表示
+        secretfloorObj.SetActive(false);
+
+
+        
     }
 
 }
